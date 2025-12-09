@@ -1,6 +1,4 @@
-
 // Load Quotes from Local Storage 
-
 
 let quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "The best way to get started is to quit talking and begin doing.", category: "Motivation" },
@@ -23,6 +21,7 @@ function saveQuotesToLocalStorage() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
+
 // Show Random Quote  + Session Storage 
 
 
@@ -32,7 +31,7 @@ function showRandomQuote() {
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const randomQuote = quotes[randomIndex];
 
-  // Save last viewed quote in SESSION storage 
+  //  Save last viewed quote in session storage
   sessionStorage.setItem("lastQuote", JSON.stringify(randomQuote));
 
   const p = document.createElement("p");
@@ -71,13 +70,9 @@ function addQuote() {
     category: quoteCategory
   };
 
-  //  Update array
   quotes.push(newQuote);
-
-  // Save to Local Storage
   saveQuotesToLocalStorage();
 
-  // Update DOM using createElement + appendChild
   quoteDisplay.innerHTML = "";
 
   const p = document.createElement("p");
@@ -89,7 +84,6 @@ function addQuote() {
   quoteDisplay.appendChild(p);
   quoteDisplay.appendChild(small);
 
-  //  Clear inputs
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
 }
@@ -97,10 +91,8 @@ function addQuote() {
 
 // Restore Last Session Quote 
 
-
 function loadLastSessionQuote() {
   const lastQuote = JSON.parse(sessionStorage.getItem("lastQuote"));
-
   if (!lastQuote) return;
 
   quoteDisplay.innerHTML = "";
@@ -115,6 +107,42 @@ function loadLastSessionQuote() {
   quoteDisplay.appendChild(small);
 }
 
+// JSON EXPORT FUNCTION 
+
+
+function exportToJsonFile() {
+  const dataStr = JSON.stringify(quotes, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
+
+// JSON IMPORT FUNCTION 
+
+
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+
+  fileReader.onload = function (event) {
+    const importedQuotes = JSON.parse(event.target.result);
+
+    quotes.push(...importedQuotes);
+    saveQuotesToLocalStorage();
+
+    alert("Quotes imported successfully!");
+  };
+
+  fileReader.readAsText(event.target.files[0]);
+}
 
 // Event Listener
 
@@ -124,10 +152,8 @@ newQuoteBtn.addEventListener("click", showRandomQuote);
 
 // Initialize App 
 
-
 createAddQuoteForm();
 
-// Load last quote from session OR show random
 if (sessionStorage.getItem("lastQuote")) {
   loadLastSessionQuote();
 } else {
