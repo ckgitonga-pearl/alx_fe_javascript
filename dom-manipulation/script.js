@@ -29,7 +29,7 @@ populateCategories();
 
 const savedFilter = localStorage.getItem("selectedCategory");
 if (savedFilter) {
-  document.getElementById("categoryFilter").value = savedFilter;
+  categoryFilter.value = savedFilter;
 }
 
 function populateCategories() {
@@ -115,11 +115,22 @@ function addQuote() {
     category: quoteCategory
   };
 
+  //  Update quotes array
   quotes.push(newQuote);
-  populateCategories();
-  saveQuotesToLocalStorage();
-  populateCategories(); // Update filter options dynamically
 
+  // Persist quotes in localStorage
+  saveQuotesToLocalStorage();
+
+  // Update categories immediately in dropdown
+  populateCategories();
+
+  //  Automatically select the new category if it's new
+  document.getElementById("categoryFilter").value = quoteCategory;
+
+  //  Persist selected category
+  localStorage.setItem("selectedCategory", quoteCategory);
+
+  //  Update DOM in real time
   quoteDisplay.innerHTML = "";
 
   const p = document.createElement("p");
@@ -131,6 +142,7 @@ function addQuote() {
   quoteDisplay.appendChild(p);
   quoteDisplay.appendChild(small);
 
+  //  Clear inputs
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
 }
