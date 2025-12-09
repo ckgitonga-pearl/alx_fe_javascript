@@ -8,7 +8,6 @@ const quotes = [
   { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", category: "Success" }
 ];
 
-
 // DOM Elements
 
 
@@ -16,22 +15,31 @@ const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
 
 
-// Show Random Quote 
+// Show Random Quote ✅
 
 
 function showRandomQuote() {
+  quoteDisplay.innerHTML = "";
+
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const randomQuote = quotes[randomIndex];
 
-  quoteDisplay.innerHTML = `
-    <p>"${randomQuote.text}"</p>
-    <small>— ${randomQuote.category}</small>
-  `;
+  const p = document.createElement("p");
+  p.textContent = `"${randomQuote.text}"`;
+
+  const small = document.createElement("small");
+  small.textContent = `— ${randomQuote.category}`;
+
+  quoteDisplay.appendChild(p);
+  quoteDisplay.appendChild(small);
 }
 
 
+// REQUIRED FUNCTION 
+
+
 function createAddQuoteForm() {
-  console.log("Add Quote Form Ready");
+  console.log("Add Quote Form Loaded");
 }
 
 
@@ -52,15 +60,24 @@ function addQuote() {
     category: quoteCategory
   };
 
+  //  Update ARRAY dynamically
   quotes.push(newQuote);
 
+  //  Update DOM using createElement + appendChild
+  quoteDisplay.innerHTML = "";
+
+  const p = document.createElement("p");
+  p.textContent = `"${newQuote.text}"`;
+
+  const small = document.createElement("small");
+  small.textContent = `— ${newQuote.category}`;
+
+  quoteDisplay.appendChild(p);
+  quoteDisplay.appendChild(small);
+
+  //  Clear input fields
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
-
-  quoteDisplay.innerHTML = `
-    <p>"${newQuote.text}"</p>
-    <small>— ${newQuote.category}</small>
-  `;
 }
 
 // Event Listener
@@ -69,8 +86,7 @@ function addQuote() {
 newQuoteBtn.addEventListener("click", showRandomQuote);
 
 
-// Initialize App
-
+// Initialize App 
 
 createAddQuoteForm();
 showRandomQuote();
