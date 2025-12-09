@@ -25,6 +25,16 @@
 <select id="categoryFilter" onchange="filterQuotes()">
   <option value="all">All Categories</option>
 </select>
+<!-- Sync Notification -->
+<div id="syncNotification" style="display:none; padding:10px; background:#222; color:#fff; margin-top:10px;"></div>
+
+<!-- Manual Conflict Resolver -->
+<div id="conflictBox" style="display:none; border:1px solid #000; padding:10px; margin-top:10px;">
+  <p><strong>Conflict Detected!</strong></p>
+  <p id="conflictText"></p>
+  <button onclick="resolveConflict('local')">Keep My Version</button>
+  <button onclick="resolveConflict('server')">Use Server Version</button>
+</div>
     <script src="script.js"></script>
   </body>
   </html>

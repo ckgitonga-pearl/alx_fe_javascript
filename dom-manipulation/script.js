@@ -1,7 +1,47 @@
+// MOCK SERVER CONFIG (JSONPlaceholder)
+
+
+const MOCK_API_URL = "https://jsonplaceholder.typicode.com/posts";
+const SERVER_SYNC_INTERVAL = 15000; // 15 seconds
+
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(MOCK_API_URL);
+    const serverData = await response.json();
+
+    // Convert mock posts into timestamped quote format
+    const serverQuotes = serverData.slice(0, 5).map(post => ({
+      text: post.title,
+      category: "Server",
+      updatedAt: Date.now() //Simulate server timestamp
+    }));
+
+    syncServerData(serverQuotes);
+
+    console.log("Periodic server sync complete");
+
+  } catch (error) {
+    console.error("Server sync failed:", error);
+  }
+}
+async function postQuoteToServer(quote) {
+  try {
+    await fetch(MOCK_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(quote)
+    });
+
+    console.log(" Quote sent to server");
+
+  } catch (error) {
+    console.error(" Failed to send quote to server:", error);
+  }
+}
 
 // Load Quotes from Local Storage 
-
-
 let quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "The best way to get started is to quit talking and begin doing.", category: "Motivation" },
   { text: "Life is what happens when you're busy making other plans.", category: "Life" },
@@ -51,6 +91,8 @@ function populateCategories() {
   if (savedFilter) {
     categoryFilter.value = savedFilter;
   }
+  // Periodic server sync (simulate live updates)
+setInterval(fetchQuotesFromServer, SERVER_SYNC_INTERVAL);
 }
 
 
@@ -145,6 +187,12 @@ function addQuote() {
   //  Clear inputs
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
+  postQuoteToServer(newQuote);
+  const newQuote = {
+  text: quoteText,
+  category: quoteCategory,
+  updatedAt: Date.now() // Local timestamp
+};
 }
 
 
@@ -264,3 +312,93 @@ if (sessionStorage.getItem("lastQuote")) {
 } else {
   showRandomQuote();
 }
+let pendingConflict = null;
+
+function syncServerData(serverQuotes) {
+  let wasUpdated = false;
+
+  serverQuotes.forEach(serverQuote => {
+    const localIndex = quotes.findIndex(
+      local =>
+        local.text === serverQuote.text &&
+        local.category === serverQuote.category
+    );
+
+    if (localIndex === -1) {
+      //  New server quote
+      quotes.push(serverQuote);
+      wasUpdated = true;
+
+    } else {
+      const localQuote = quotes[localIndex];
+
+      //  CONFLICT DETECTED
+      if (
+        localQuote.updatedAt &&
+        serverQuote.updatedAt &&
+        localQuote.updatedAt !== serverQuote.updatedAt
+      ) {
+        pendingConflict = {
+          local: localQuote,
+          server: serverQuote,
+          index: localIndex
+        };
+
+        showConflictUI(localQuote, serverQuote);
+        return;
+      }
+
+      // Default: Server wins automatically
+      if (serverQuote.updatedAt > localQuote.updatedAt) {
+        quotes[localIndex] = serverQuote;
+        wasUpdated = true;
+      }
+    }
+  });
+
+  if (wasUpdated) {
+    saveQuotesToLocalStorage();
+    populateCategories();
+    showRandomQuote();
+    showNotification("Quotes updated from server.");
+  }
+}
+
+function showNotification(message) {
+  const box = document.getElementById("syncNotification");
+  box.textContent = message;
+  box.style.display = "block";
+
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 4000);
+}
+function showConflictUI(localQuote, serverQuote) {
+  const box = document.getElementById("conflictBox");
+  const text = document.getElementById("conflictText");
+
+  text.innerHTML = `
+    <p><strong>Your Version:</strong> "${localQuote.text}"</p>
+    <p><strong>Server Version:</strong> "${serverQuote.text}"</p>
+  `;
+  box.style.display = "block";
+}
+function resolveConflict(choice) {
+  if (!pendingConflict) return;
+
+  if (choice === "server") {
+    quotes[pendingConflict.index] = pendingConflict.server;
+    showNotification("✅ Server version kept.");
+  } else {
+    showNotification("✅ Local version kept.");
+  }
+
+  pendingConflict = null;
+
+  document.getElementById("conflictBox").style.display = "none";
+
+  saveQuotesToLocalStorage();
+  populateCategories();
+  showRandomQuote();
+}
+
