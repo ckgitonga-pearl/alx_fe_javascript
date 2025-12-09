@@ -25,10 +25,16 @@ function saveQuotesToLocalStorage() {
 
 
 // Populate Category Dropdown 
+populateCategories();
 
+const savedFilter = localStorage.getItem("selectedCategory");
+if (savedFilter) {
+  document.getElementById("categoryFilter").value = savedFilter;
+}
 
 function populateCategories() {
   // Clear old options except "All"
+  const categoryFilter = document.getElementById("categoryFilter");
   categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
 
   const categories = [...new Set(quotes.map(q => q.category))];
@@ -110,6 +116,7 @@ function addQuote() {
   };
 
   quotes.push(newQuote);
+  populateCategories();
   saveQuotesToLocalStorage();
   populateCategories(); // Update filter options dynamically
 
@@ -133,13 +140,37 @@ function addQuote() {
 
 
 function filterQuotes() {
+    const categoryFilter = document.getElementById("categoryFilter");
   const selectedCategory = categoryFilter.value;
 
   //  Save selected filter to localStorage
   localStorage.setItem("selectedCategory", selectedCategory);
+  
+  quoteDisplay.innerHTML = "";
+  let filteredQuotes = quotes;
 
-  showRandomQuote(); //  Show a random quote from the filtered list
+  if (selectedCategory !== "all") {
+    filteredQuotes = quotes.filter(
+      quote => quote.category === selectedCategory
+    );
+  }
+if (filteredQuotes.length === 0) {
+    quoteDisplay.textContent = "No quotes found for this category.";
+    return;
+  }
+  const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+  const randomQuote = filteredQuotes[randomIndex];
+
+  const p = document.createElement("p");
+  p.textContent = `"${randomQuote.text}"`;
+
+  const small = document.createElement("small");
+  small.textContent = `— ${randomQuote.category}`;
+
+  quoteDisplay.appendChild(p);
+  quoteDisplay.appendChild(small);
 }
+
 
 
 // Restore Last Session Quote 
