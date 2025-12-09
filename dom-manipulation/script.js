@@ -16,15 +16,10 @@ const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
 
 
-// Show Random Quote
+// Show Random Quote 
 
 
 function showRandomQuote() {
-  if (quotes.length === 0) {
-    quoteDisplay.innerHTML = "<p>No quotes available.</p>";
-    return;
-  }
-
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const randomQuote = quotes[randomIndex];
 
@@ -35,7 +30,12 @@ function showRandomQuote() {
 }
 
 
-// Add New Quote Dynamically ✅
+function createAddQuoteForm() {
+  console.log("Add Quote Form Ready");
+}
+
+
+// Add New Quote 
 
 
 function addQuote() {
@@ -52,20 +52,16 @@ function addQuote() {
     category: quoteCategory
   };
 
-  // Add to array dynamically
   quotes.push(newQuote);
 
-  // Clear input fields
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
 
-  // Instantly show the new quote
   quoteDisplay.innerHTML = `
     <p>"${newQuote.text}"</p>
     <small>— ${newQuote.category}</small>
   `;
 }
-
 
 // Event Listener
 
@@ -73,7 +69,8 @@ function addQuote() {
 newQuoteBtn.addEventListener("click", showRandomQuote);
 
 
-// Initial Quote on Page Load
+// Initialize App
 
 
+createAddQuoteForm();
 showRandomQuote();
